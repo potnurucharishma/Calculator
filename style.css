@@ -1,44 +1,99 @@
+:root {
+    --bg-color: #020202;
+    --calc-bg: rgba(10, 10, 10, 0.85);
+    --accent-color: #00f2ff;
+    --text-color: #ffffff;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'Segoe UI', sans-serif;
 }
 
 body {
-    width: 100%;
-    height: 100vh;
+    background: var(--bg-color);
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #000; /* Deep black background */
+    min-height: 100vh;
     overflow: hidden;
 }
 
-#mathCanvas {
+/* --- BRIGHT ANIMATION LAYER --- */
+#mathBg {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: -1; /* Keeps it behind the calculator */
+    width: 100%;
+    height: 100%;
+    z-index: -1;
 }
 
+.math-symbol {
+    position: absolute;
+    font-weight: bold;
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor; /* Double glow */
+    user-select: none;
+    pointer-events: none;
+    animation: floatUp 6s linear forwards;
+    filter: brightness(2);
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(110vh) rotate(0deg);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-20vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* --- CALCULATOR BOX --- */
 .calculator {
-    padding: 25px;
-    border-radius: 12px;
-    background: rgba(20, 20, 25, 0.9); /* Slightly transparent */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.8);
+    width: 320px;
+    background: var(--calc-bg);
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    border-radius: 20px;
+    padding: 20px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 242, 255, 0.1);
 }
 
-#inputBox {
-    width: 320px;
-    border: none;
+.display {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
     padding: 20px;
-    margin-bottom: 20px;
-    background: rgba(0, 0, 0, 0.3);
-    font-size: 40px;
     text-align: right;
-    color: #00ffcc;
+    margin-bottom: 20px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-left: 4px solid var(--accent-color);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+#current-operand {
+    color: var(--accent-color);
+    font-size: 2rem;
+    text-shadow: 0 0 8px var(--accent-color);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#previous-operand {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.9rem;
 }
 
 .buttons {
@@ -48,31 +103,34 @@ body {
 }
 
 button {
-    width: 65px;
-    height: 65px;
+    padding: 18px;
+    border-radius: 10px;
     border: none;
-    border-radius: 8px;
-    background: #2a2d36;
-    color: #efefef;
-    font-size: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 1.2rem;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
 }
 
 button:hover {
-    background: #3a3f4b; /* Subtle highlight, no glow */
+    background: rgba(0, 242, 255, 0.2);
+    box-shadow: 0 0 12px var(--accent-color);
+    transform: scale(1.05);
 }
 
-.operator {
-    color: #00ffcc;
+.operator { color: var(--accent-color); }
+.control { color: #ff5555; }
+
+.equals { 
+    background: var(--accent-color); 
+    color: #000; 
+    font-weight: bold; 
 }
 
-.equalBtn {
-    background: #00ffcc;
-    color: #000;
-    font-weight: bold;
+.equals:hover {
+    background: #fff;
+    box-shadow: 0 0 20px #fff;
 }
 
-.equalBtn:hover {
-    background: #00d4aa;
-}
+.span-two { grid-column: span 2; }

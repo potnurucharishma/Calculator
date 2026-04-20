@@ -1,63 +1,98 @@
 // --- BACKGROUND ANIMATION ---
-const canvas = document.getElementById('mathCanvas');
-const ctx = canvas.getContext('2d');
+const symbols = ['π', '∞', 'Σ', '√', '∫', '∆', 'x²', 'sin', 'cos', 'log', '÷', '≠'];
+const colors = ['#00f2ff', '#00ff9d', '#ff00e1', '#ffea00', '#ff4d4d', '#7000ff'];
+const bgContainer = document.getElementById('mathBg');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function createSymbol() {
+    const el = document.createElement('div');
+    el.classList.add('math-symbol');
+    
+    // Pick random symbol and color
+    el.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+    el.style.color = colors[Math.floor(Math.random() * colors.length)];
+    
+    // Random position and size
+    el.style.left = Math.random() * 100 + 'vw';
+    const size = Math.random() * (2.2 - 1) + 1;
+    el.style.fontSize = `${size}rem`;
+    
+    // Random duration for movement
+    const duration = Math.random() * 3 + 4; 
+    el.style.animationDuration = `${duration}s`;
+    
+    bgContainer.appendChild(el);
 
-// Math symbols and numbers
-const symbols = "0123456789+-*/=√πΣ∫≠x²y";
-const fontSize = 16;
-const columns = canvas.width / fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
-
-function drawBackground() {
-    // Faint black rectangle to create trailing effect
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "#00ffcc22"; // Very faint teal for the symbols
-    ctx.font = fontSize + "px monospace";
-
-    for (let i = 0; i < drops.length; i++) {
-        const text = symbols.charAt(Math.floor(Math.random() * symbols.length));
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-            drops[i] = 0;
-        }
-        drops[i]++;
-    }
+    // Remove from DOM after animation finishes
+    setTimeout(() => { el.remove(); }, duration * 1000);
 }
 
-setInterval(drawBackground, 50);
+// Spawn speed (lower = more symbols)
+setInterval(createSymbol, 200);
 
 // --- CALCULATOR LOGIC ---
-let input = document.getElementById('inputBox');
-let buttons = document.querySelectorAll('button');
-let string = "";
+let currentInput = '0';
+let previousInput = '';
+let operator = null;
 
-buttons.forEach(button => {
-    button.addEventListener('click', (e) => {
-        let val = e.target.innerHTML;
+const currentDisplay = document.getElementById('current-operand');
+const previousDisplay = document.getElementById('previous-operand');
 
-        if(val == '='){
-            try {
-                string = eval(string);
-                input.value = string;
-            } catch {
-                input.value = "Error";
-                string = "";
-            }
-        } else if(val == 'AC'){
-            string = "";
-            input.value = "";
-        } else if(val == 'DEL'){
-            string = string.toString().slice(0, -1);
-            input.value = string;
-        } else {
-            string += val;
-            input.value = string;
-        }
-    });
-});
+function updateDisplay() {
+    currentDisplay.innerText = currentInput;
+    previousDisplay.innerText = operator ? `${previousInput} ${operator}` : '';
+}
+
+function appendNumber(number) {
+    if (number === '.' && currentInput.includes('.')) return;
+    if (currentInput === '0' && number !== '.') {
+        currentInput = number;
+    } else {
+        currentInput += number;
+    }
+    updateDisplay();
+}
+
+function appendOperator(op) {
+    if (currentInput === '') return;
+    if (previousInput !== '') calculate();
+    operator = op;
+    previousInput = currentInput;
+    currentInput = '0';
+    updateDisplay();
+}
+
+function clearDisplay() {
+    currentInput = '0';
+    previousInput = '';
+    operator = null;
+    updateDisplay();
+}
+
+function deleteNumber() {
+    if (currentInput.length === 1) {
+        currentInput = '0';
+    } else {
+        currentInput = currentInput.slice(0, -1);
+    }
+    updateDisplay();
+}
+
+function calculate() {
+    let result;
+    const prev = parseFloat(previousInput);
+    const current = parseFloat(currentInput);
+    if (isNaN(prev) || isNaN(current)) return;
+
+    switch (operator) {
+        case '+': result = prev + current; break;
+        case '-': result = prev - current; break;
+        case '*': result = prev * current; break;
+        case '/': result = current === 0 ? "Error" : prev / current; break;
+        default: return;
+    }
+
+    currentInput = result.toString();
+    operator = null;
+    previousInput = '';
+    updateDisplay();
+}
